@@ -25,16 +25,21 @@ module Houston
     end
 
     def initialize
+      # 環境変数で明示されている場合は独自に指定できる
       @gateway_uri = ENV['APN_GATEWAY_URI']
       @feedback_uri = ENV['APN_FEEDBACK_URI']
       @certificate = certificate_data
+      # 証明書にパスがかかっている場合
       @passphrase = ENV['APN_CERTIFICATE_PASSPHRASE']
+      # タイムアウトの設定
       @timeout = Float(ENV['APN_TIMEOUT'] || 0.5)
     end
 
+    # プッシュ通知を送信する
     def push(*notifications)
       return if notifications.empty?
 
+      # 重複カット
       notifications.flatten!
 
       Connection.open(@gateway_uri, @certificate, @passphrase) do |connection|
@@ -81,6 +86,7 @@ module Houston
       unregistered_devices.collect { |device| device[:token] }
     end
 
+    # 証明書を取得する(読み込む)
     def certificate_data
       if ENV['APN_CERTIFICATE']
         File.read(ENV['APN_CERTIFICATE'])
